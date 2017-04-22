@@ -29,11 +29,11 @@ public class asst3
         MaxHeap heap = new MaxHeap(nums.length);
         for (int i = 0; i < nums.length; i ++) 
         {
-            heap.insert(nums[i], i);
+            heap.insert(nums[i]);
         } 
         //System.out.println("heap is: " + heap);
-        HeapElt HE1;
-        HeapElt HE2;
+        long HE1;
+        long HE2;
         while(true)
         {
             HE1 = heap.deleteMax();
@@ -41,10 +41,10 @@ public class asst3
 
             HE2 = heap.deleteMax();
             //System.out.println("HE2: " + HE2);
-            if (HE2.num == 0)
-                return HE1.num;
-            heap.insert(HE1.num-HE2.num, HE1.idx);
-            heap.insert(0, HE2.idx); 
+            if (HE2 == 0)
+                return HE1;
+            heap.insert(HE1-HE2);
+            heap.insert(0); 
         }  
     }
 }
