@@ -106,9 +106,9 @@ public class asst3
             signs[idx1] *= -1;
             temp_res = residue(nums, signs);
             if (temp_res < s_res)
-                s_res = temp_res;
+                s_res = temp_res; // we keep our change
             else
-                signs[idx1] *= -1; //reset
+                signs[idx1] *= -1; //we undo our change;
         }
         return s_res;
     }
@@ -333,6 +333,7 @@ public class asst3
                 idx1 = (int) (Math.random()*N);
                 num2 = (int) (Math.random()*N);
             } while (s1[idx1] == num2);
+            s1[idx1] = num2;
             //calculate s1_res
             Arrays.fill(nums_temp, 0);
             for (int j = 0; j < N; j++)
