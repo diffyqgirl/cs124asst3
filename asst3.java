@@ -26,6 +26,74 @@ public class asst3
             System.out.println(hc(nums, max_iter));
         else if (args[1].equals("sa"))
             System.out.println(sa(nums, max_iter));
+        else if (args[1].equals("rr_reg"))
+            System.out.println(rr_reg(nums, max_iter));
+        else if (args[1].equals("hc_reg"))
+            System.out.println(hc_reg(nums, max_iter));
+        else if (args[1].equals("sa_reg"))
+            System.out.println(sa_reg(nums, max_iter));
+    }
+
+    public static long sa_reg(long[] nums, int max_iter)
+    {
+        int N = nums.length;
+        int[] s = new int[N];
+        int[] s1 = new int[N];
+        int[] s2 = new int[N];
+        long s_res;
+        long s1_res;
+        long s2_res;
+        // we start with a random solution
+        for (int j = 0; j < N; j++)
+        {
+            if (Math.random() > 0.5)
+                s[j] = 1;
+            else
+                s[j] = -1;
+        }
+        s_res = residue(s);
+        for (int i = 1; i < max_iter; i++)
+        {
+            // s1 is a random neighbor of s
+            s1 = System.arraycopy(s, 0, s1, 0, N); // start with s1=s
+            int idx1 = (int) Math.random() * N;
+            s1[idx1] *= -1;
+            s1_res = residue(nums, s1);
+            if (s1_res < s_res)
+            {
+                s_res = s1_res;
+                System.arraycopy(s1, 0, s, 0, N); // s = s1
+            }
+        }
+        return s2_res;
+    }
+
+    public static long hc_reg(long[] nums, int max_iter)
+    {
+        int N = nums.length;
+        int[] signs = new int[N];
+        //int[] signs_temp = new int[N];
+        long s_res;
+        long temp_res;
+        for (int j = 0; j < N; j++)
+        {
+            if (Math.random() > 0.5)
+                signs[j] = 1;
+            else
+                signs[j] = -1;
+        }
+        s_res = residue(nums, signs); 
+        for (int i = 1; i < max_iter; i++)
+        {
+            int idx1 = (int) Math.random()*N;
+            signs[idx1] *= -1;
+            temp_res = residue(nums, signs);
+            if (temp_res < s_res)
+                s_res = temp_res;
+            else
+                signs[idx1] *= -1; //reset
+        }
+        return s_res;
     }
 
     public static long rr_reg(long[] nums, int max_iter)
@@ -33,6 +101,7 @@ public class asst3
         int N = nums.length;
         int[] signs = new int[N];
         long s_res;
+        long temp_res;
         for (int j = 0; j < N; j++)
         {
             if (Math.random() >0.5)
@@ -40,6 +109,21 @@ public class asst3
             else
                 signs[j] = -1;
         }
+        s_res = residue(nums, signs);
+        for (int i = 1; i < max_iter; i++)
+        {
+            for (int j = 0; j < N; j++)
+            {
+                if (Math.random() >0.5)
+                    signs[j] = 1;
+                else
+                    signs[j] = -1;
+            }
+            temp_res = residue(nums, signs);
+            if (temp_res < s_res)
+                s_res = temp_res;
+        }
+        return s_res;
     }
 
     public static long residue(long[] nums, int[] signs)
@@ -48,7 +132,11 @@ public class asst3
         long neg_sum = 0;
         for (int i = 0; i < nums.length; i ++)
         {
-
+            assert(signs[i] == 1 || signs[i] == -1);
+            if (signs[i]==1)
+                pos_sum += nums[i];
+            else
+                neg_sum += nums[i];
         }
         return Math.abs(pos_sum - neg_sum);
 
