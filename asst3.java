@@ -51,11 +51,13 @@ public class asst3
             else
                 s[j] = -1;
         }
-        s_res = residue(s);
+        s_res = residue(nums,s);
+        s2_res = s_res;
+        System.arraycopy(s, 0, s2, 0, N); //s2 = s
         for (int i = 1; i < max_iter; i++)
         {
             // s1 is a random neighbor of s
-            s1 = System.arraycopy(s, 0, s1, 0, N); // start with s1=s
+            System.arraycopy(s, 0, s1, 0, N); // start with s1=s
             int idx1 = (int) Math.random() * N;
             s1[idx1] *= -1;
             s1_res = residue(nums, s1);
@@ -63,6 +65,21 @@ public class asst3
             {
                 s_res = s1_res;
                 System.arraycopy(s1, 0, s, 0, N); // s = s1
+            }
+            else
+            {
+                double prob = Math.exp(-(s1_res - s_res)/ T(i));
+                if (Math.random() < prob)
+                {
+                    //s = s1
+                    System.arraycopy(s1, 0, s, 0, N); 
+                    s_res = s1_res;
+                } 
+            }
+            if (s_res < s2_res)
+            {
+                s2_res = s_res;
+                System.arraycopy(s, 0, s2, 0, N); //s2 = s
             }
         }
         return s2_res;
@@ -141,6 +158,76 @@ public class asst3
         return Math.abs(pos_sum - neg_sum);
 
     }
+
+    public static long sa(long[] nums, int max_iter)
+    {
+        int N = nums.length;
+        int[] s = new int[N];
+        int[] s1 = new int[N];
+        int[] s2 = new int[N];
+        long s_res;
+        long s1_res;
+        long s2_res;
+        long[] nums_temp = new long[N];
+
+        //generate starting point solution 
+        for (int j = 0; j < N; j++)
+            s[j] = (int) (Math.random()*N);
+        //calculate residue of s
+        for (int j = 0; j < N; j++)
+            nums_temp[s[j]] += nums[j];
+        s_res = KK(nums_temp);
+
+        //s2 = s
+        s2_res = s_res;
+        System.arraycopy(s, 0, s2, 0, N);
+
+        for (int i = 1; i < max_iter; i++)
+        {
+            //S' = random neighbor of S
+            System.arraycopy(s, 0, s1, 0, N); //copy s into s1
+            int idx1;
+            int num2;
+            do
+            {
+                idx1 = (int) (Math.random()*N);
+                num2 = (int) (Math.random()*N);
+            } while (s1[idx1] == num2);
+            s1[idx1] = num2;
+            //clear out nums_temp
+            Arrays.fill(nums_temp, 0);
+            //calculate s1_res
+            for (int j = 0; j < N; j++)
+                nums_temp[s1[j]] += nums[j];
+            s1_res = KK(nums_temp);
+            if (s1_res < s_res)
+            {
+                //s = s1
+                System.arraycopy(s1, 0, s, 0, N);
+                s_res = s1_res;
+            }
+            else
+            {
+                double prob = Math.exp(-(s1_res - s_res)/ T(i));
+                if (Math.random() < prob)
+                {
+                    //s = s1
+                    System.arraycopy(s1, 0, s, 0, N);
+                    s_res = s1_res;
+                }
+
+            }
+            if (s_res < s2_res)
+            {
+                //s2 = s
+                System.arraycopy(s, 0, s2, 0, N);
+                s2_res = s_res;
+            }
+        } // end outer for
+        return s2_res;
+    }
+
+    /*
     //simulated annealing
     public static long sa(long[] nums, int max_iter)
     {
@@ -205,12 +292,65 @@ public class asst3
         }
         return s2_res;
     }
+    */
 
     public static double T(int i)
     {
         return Math.pow(10, 10)*Math.pow(0.8, (int) i/300);
     }
 
+    //attempt 2
+    public static long hc(long[] nums, int max_iter)
+    {
+        int N = nums.length;
+        int[] s = new int[N];
+        int[] s1 = new int[N];
+        long s_res;
+        long s1_res;
+        long[] nums_temp = new long[N];       
+
+        //start with random solution s
+        for (int j = 0; j < N; j++)
+        {
+            s[j] = (int) (Math.random()*N);
+        }
+        //calculate residue
+        Arrays.fill(nums_temp, 0);
+        for (int j = 0; j < N; j++)
+        {
+            nums_temp[s[j]] += nums[j];
+        }
+        s_res = KK(nums_temp);
+
+        for (int i = 1; i < max_iter; i++)
+        {
+            //s1 is a random neighbor of s
+            System.arraycopy(s, 0, s1, 0, N); //s1 = s
+            int idx1;
+            int num2;
+            do
+            {
+                idx1 = (int) (Math.random()*N);
+                num2 = (int) (Math.random()*N);
+            } while (s1[idx1] == num2);
+            //calculate s1_res
+            Arrays.fill(nums_temp, 0);
+            for (int j = 0; j < N; j++)
+            {
+                nums_temp[s1[j]] += nums[j];
+            }
+            s1_res = KK(nums_temp);
+            if (s1_res < s_res)
+            {
+                //s = s1
+                System.arraycopy(s1, 0, s, 0, N);
+                s_res = s1_res;
+            }
+        }
+        return s_res;
+    }
+
+    /*
     //hill climbing
     public static long hc(long[] nums, int max_iter)
     {
@@ -237,18 +377,16 @@ public class asst3
                 idx1 = (int) (Math.random()*N);
                 num2 = (int) (Math.random()*N);
             } while (temp[idx1] == num2);
-            int num1 = temp[idx1];
+            //int num1 = temp[idx1];
             temp[idx1] = num2; // actually make our random move
+          
             
-            nums_temp[num1] -= nums[idx1];
-            nums_temp[num2] += nums[idx1];
-
-            /*
+            
             Arrays.fill(nums_temp, 0);           
             for (int j = 0; j < N; j++)
             {
                 nums_temp[temp[j]] += nums[j];
-            }*/ 
+            }
             
             
             
@@ -260,6 +398,7 @@ public class asst3
         }
         return s_res;
     }
+    */
     //repeated random
     public static long rr(long[] nums, int max_iter)
     {
@@ -279,8 +418,7 @@ public class asst3
         s_res = KK(nums_temp);
         for (int i = 1; i < max_iter; i++)
         {
-            for (int j = 0; j < N; j++)
-                nums_temp[j] = 0;
+            Arrays.fill(nums_temp, 0);
             for (int j = 0; j < N; j++)
             {
                 temp[j] = (int) (Math.random()*N);
@@ -298,6 +436,7 @@ public class asst3
         }
         return s_res;
     }
+    /*
     public static long sum(long[] nums)
     {
         long sum = 0;
@@ -307,6 +446,7 @@ public class asst3
         }
         return sum;
     }
+    */
     public static long KK(long[] nums)
     {
         PriorityQueue<Long> altheap = new PriorityQueue<Long>(100, Collections.reverseOrder());
