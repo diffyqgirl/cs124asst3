@@ -58,13 +58,16 @@ public class asst3
         {
             // s1 is a random neighbor of s
             System.arraycopy(s, 0, s1, 0, N); // start with s1=s
-            int idx1 = (int) Math.random() * N;
+            int idx1 = (int) (Math.random() * N);
             s1[idx1] *= -1;
             s1_res = residue(nums, s1);
+            //System.out.println("s1_res " + s1_res);
             if (s1_res < s_res)
             {
+                //System.out.println("here");
+                //s = s1
                 s_res = s1_res;
-                System.arraycopy(s1, 0, s, 0, N); // s = s1
+                System.arraycopy(s1, 0, s, 0, N); 
             }
             else
             {
@@ -80,6 +83,7 @@ public class asst3
             {
                 s2_res = s_res;
                 System.arraycopy(s, 0, s2, 0, N); //s2 = s
+                //System.err.println("S2 res: "  + s2_res);
             }
         }
         return s2_res;
@@ -102,7 +106,7 @@ public class asst3
         s_res = residue(nums, signs); 
         for (int i = 1; i < max_iter; i++)
         {
-            int idx1 = (int) Math.random()*N;
+            int idx1 = (int) (Math.random()*N);
             signs[idx1] *= -1;
             temp_res = residue(nums, signs);
             if (temp_res < s_res)
