@@ -1,9 +1,14 @@
 import java.io.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.PriorityQueue;
 public class asst3
 {
     static final int N = 100;
     public static void main(String[] args) throws IOException
     {
+        //System.out.println(Arrays.toString(args));
+        int max_iter = 25000;//25000
         File infile = new File(args[0]);
         FileReader fr = new FileReader(infile);
         BufferedReader br = new BufferedReader(fr);
@@ -13,7 +18,197 @@ public class asst3
             nums[i] = Long.parseLong(br.readLine());
         }
         //long[] test_nums = {7, 10, 5, 6, 8};
-        System.out.println(KK(nums));
+        if (args[1].equals("kk"))
+            System.out.println(KK(nums));
+        else if (args[1].equals("rr"))
+            System.out.println(rr(nums, max_iter));
+        else if (args[1].equals("hc"))
+            System.out.println(hc(nums, max_iter));
+        else if (args[1].equals("sa"))
+            System.out.println(sa(nums, max_iter));
+    }
+
+    public static long rr_reg(long[] nums, int max_iter)
+    {
+        int N = nums.length;
+        int[] signs = new int[N];
+        long s_res;
+        for (int j = 0; j < N; j++)
+        {
+            if (Math.random() >0.5)
+                signs[j] = 1;
+            else
+                signs[j] = -1;
+        }
+    }
+
+    public static long residue(long[] nums, int[] signs)
+    {
+        long pos_sum = 0;
+        long neg_sum = 0;
+        for (int i = 0; i < nums.length; i ++)
+        {
+
+        }
+        return Math.abs(pos_sum - neg_sum);
+
+    }
+    //simulated annealing
+    public static long sa(long[] nums, int max_iter)
+    {
+        int N = nums.length;
+        int[] s = new int[N];
+        int[] s1 = new int[N];
+        int[] s2 = new int[N];
+        long s_res;
+        long s1_res;
+        long s2_res;
+        long[] nums_temp = new long[N];
+        //get starting point solution
+        for (int i = 0; i < N; i++)
+            s[i] = (int) Math.random()*N;
+        for (int i = 0; i < N; i++)
+            nums_temp[s[i]] += nums[i];
+        s_res = KK(nums_temp);
+
+        //s2 = s
+        System.arraycopy(s, 0, s2, 0, N);
+        s2_res = s_res;
+
+        for (int i = 1; i < max_iter; i++)
+        {
+            //generate a random move
+            int idx1;
+            int num2;
+            do
+            {
+                idx1 = (int) (Math.random()*N);
+                num2 = (int) (Math.random()*N);
+            } while (s[idx1] == num2);
+            int num1 = s[idx1];
+            System.arraycopy(s, 0, s1, 0, N); // s1 = s
+            s1[idx1] = num2; // actually make our random move
+            
+            //move from s to s1
+            nums_temp[num1] -= nums[idx1];
+            nums_temp[num2] += nums[idx1];
+            s1_res = KK(nums_temp);
+            if (s1_res < s_res)
+            {
+                System.arraycopy(s1, 0, s, 0, N); //s = s1
+                s_res = s1_res;
+            }
+            else
+            {
+                double prob = Math.exp(-(s1_res - s_res)/ T(i));
+                if (Math.random() < prob)
+                {
+                    //s = s1
+                    System.arraycopy(s1, 0, s, 0, N); 
+                    s_res = s1_res;
+                }
+            }
+            if (s_res < s2_res)
+            {
+                //s2 = s
+                System.arraycopy(s, 0, s2, 0, N);
+                s2_res = s_res;
+            }
+        }
+        return s2_res;
+    }
+
+    public static double T(int i)
+    {
+        return Math.pow(10, 10)*Math.pow(0.8, (int) i/300);
+    }
+
+    //hill climbing
+    public static long hc(long[] nums, int max_iter)
+    {
+        int N = nums.length;
+        long s_res;
+        int[] temp = new int[N];
+        long temp_res;
+        long[] nums_temp = new long[N];
+        Arrays.fill(nums_temp, 0);
+        for (int j = 0; j < N; j++)
+            temp[j] = (int) (Math.random()*N);
+        for (int j = 0; j < N; j++)
+        {
+            nums_temp[temp[j]] += nums[j];
+        }
+        s_res = KK(nums_temp); // initial value
+        for (int i = 1; i < max_iter; i ++)
+        {
+            //generate a random move
+            int idx1;
+            int num2;
+            do
+            {
+                idx1 = (int) (Math.random()*N);
+                num2 = (int) (Math.random()*N);
+            } while (temp[idx1] == num2);
+            int num1 = temp[idx1];
+            temp[idx1] = num2; // actually make our random move
+            
+            nums_temp[num1] -= nums[idx1];
+            nums_temp[num2] += nums[idx1];
+
+            /*
+            Arrays.fill(nums_temp, 0);           
+            for (int j = 0; j < N; j++)
+            {
+                nums_temp[temp[j]] += nums[j];
+            }*/ 
+            
+            
+            
+            temp_res = KK(nums_temp);
+            if (temp_res < s_res)
+            {
+                s_res = temp_res;
+            }
+        }
+        return s_res;
+    }
+    //repeated random
+    public static long rr(long[] nums, int max_iter)
+    {
+        int N = nums.length;
+        int[] s = new int[N];//best randomly generated permutation so far
+        long s_res; //the corresponding residue
+        int[] temp = new int[N]; //our next randomly generated permutation
+        long temp_res;
+        long[] nums_temp = new long[N]; //used for running kk on our permutation temp
+        Arrays.fill(nums_temp, 0);
+        for (int j = 0; j < N; j++)
+            s[j] = (int) (Math.random()*N);
+        for (int j = 0; j < N; j++)
+        {
+            nums_temp[s[j]] += nums[j];
+        }
+        s_res = KK(nums_temp);
+        for (int i = 1; i < max_iter; i++)
+        {
+            for (int j = 0; j < N; j++)
+                nums_temp[j] = 0;
+            for (int j = 0; j < N; j++)
+            {
+                temp[j] = (int) (Math.random()*N);
+            }
+            for (int j = 0; j < N; j++)
+            {
+                nums_temp[temp[j]] += nums[j];
+            }
+            temp_res = KK(nums_temp);
+            if (temp_res < s_res)
+            {
+                s_res = temp_res;
+                s = temp;
+            }
+        }
+        return s_res;
     }
     public static long sum(long[] nums)
     {
@@ -26,25 +221,38 @@ public class asst3
     }
     public static long KK(long[] nums)
     {
+        PriorityQueue<Long> altheap = new PriorityQueue<Long>(100, Collections.reverseOrder());
         MaxHeap heap = new MaxHeap(nums.length);
         for (int i = 0; i < nums.length; i ++) 
         {
             heap.insert(nums[i]);
+            altheap.add(nums[i]);
         } 
         //System.out.println("heap is: " + heap);
         long HE1;
         long HE2;
+        long l1;
+        long l2;
         while(true)
         {
-            HE1 = heap.deleteMax();
+            //HE1 = heap.deleteMax();
             //System.out.println("HE1: " + HE1);
-
-            HE2 = heap.deleteMax();
+            l1 = altheap.poll();
+            //HE2 = heap.deleteMax();
+            l2 = altheap.poll();
+            if (l2 == 0)
+                return l1;
             //System.out.println("HE2: " + HE2);
+                /*
             if (HE2 == 0)
                 return HE1;
+                */
+                altheap.add(l1-l2);
+                altheap.add((long) 0);
+                /*
             heap.insert(HE1-HE2);
-            heap.insert(0); 
+            heap.insert(0);
+            */ 
         }  
     }
 }
