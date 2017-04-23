@@ -1,0 +1,5 @@
+#!/bin/bash
+make
+for filename in ./testnums/*.txt; do
+    java -ea asst3 "$filename" "kk"
+done
